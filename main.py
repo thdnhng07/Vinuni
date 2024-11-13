@@ -55,6 +55,88 @@
 # print(len(new))
 
 
+molecules = list(map(int, input().split()))
+nuclear = []
+
+no_0 = molecules.count(0)
+
+
+for element in molecules[:]:
+    if element < 0:
+        molecules.remove(element) 
+    elif element > 0:
+        print(molecules.index(element))
+        if element not in nuclear:
+            nuclear.append(element)
+
+    else:
+        continue
+
+    
+for i in range(no_0):
+    nuclear.append(0)
+
+print(*nuclear)
+
+# drinks_list = [
+#     "Green tea",
+#     "Black tea",
+#     "Oolong tea",
+#     "White tea",
+#     "Lemonade",
+#     "Herbal tea",
+#     "Milk tea",
+#     "Bubble milk tea"
+# ]
+
+
+# def print_list():
+#     print('/n'.join(drink_list))
+
+# def find_drink():
+
+#     keyword = input('Enter the keyword: ')
+#     found_drinks = [drink for drink in drinks_list if keyword.lower() in drink.lower()]
+#     if found_drinks:
+#         print('\n'.join(found_drinks))
+#     else:
+#         print('No drink found.')
+
+
+# def add_drink():
+
+#     drink_name = input('Enter the name of the drink: ')
+#     drink_list.append(drink_name)
+#     print(f'{drink_name} has been added to the list.')
+
+# def remove_drink():
+
+#     drink_name = input('Enter the name of the drink: ')
+#     if drink_name in drinks_list:
+#         drinks_list.remove(drink_name)
+#         print(f'{drink_name} has been removed from the list.')
+#     else:
+#         print('No drink found.')
+
+
+# prompt = int(input('''What do you want to do? 
+# 1. Print the drink list
+# 2. Find drink by keyword
+# 3. Add a new drink to list
+# 4. Delete a drink
+# Please select a number (from 1-> 4):
+# '''))
+
+
+
+# if prompt == 1:
+#     print_list()
+# elif prompt == 2:
+#     find_drink()
+# elif prompt == 3:
+#     add_drink()
+# elif prompt == 4:
+#     remove_drink()
 
 
 
