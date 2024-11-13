@@ -55,28 +55,28 @@
 # print(len(new))
 
 
-molecules = list(map(int, input().split()))
-nuclear = []
+# molecules = list(map(int, input().split()))
+# nuclear = []
 
-no_0 = molecules.count(0)
+# no_0 = molecules.count(0)
 
 
-for element in molecules[:]:
-    if element < 0:
-        molecules.remove(element) 
-    elif element > 0:
-        print(molecules.index(element))
-        if element not in nuclear:
-            nuclear.append(element)
+# for element in molecules[:]:
+#     if element < 0:
+#         molecules.remove(element) 
+#     elif element > 0:
+#         print(molecules.index(element))
+#         if element not in nuclear:
+#             nuclear.append(element)
 
-    else:
-        continue
+#     else:
+#         continue
 
     
-for i in range(no_0):
-    nuclear.append(0)
+# for i in range(no_0):
+#     nuclear.append(0)
 
-print(*nuclear)
+# print(*nuclear)
 
 # drinks_list = [
 #     "Green tea",
@@ -192,5 +192,3 @@ print(*nuclear)
 # # # Print the result
 # # result = calculate_disttance()
 # # print('%.2f' % result)
-
-
