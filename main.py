@@ -192,3 +192,54 @@
 # # # Print the result
 # # result = calculate_disttance()
 # # print('%.2f' % result)
+
+# def initialize_chunks(list):
+#     k = []
+#     for i in list:
+#         k.append([i])
+#     return k
+
+
+# def merge_two_list(list1, list2):
+#     merged = []
+#     i = j = 0
+#     while i < len(list1) and j < len(list2):
+#         if list1[i] < list2[j]:
+#             merged.append(list1[i])
+#             i += 1
+#         else:
+#             merged.append(list2[j])
+#             j += 1
+#     while i < len(list1):
+#         merged.append(list1[i])
+#         i += 1
+#     while j < len(list2):
+#         merged.append(list2[j])
+#         j += 1
+#     return merged
+
+# def merge_sort(lst):
+#     chunks = initialize_chunks(lst)
+#     print(chunks)
+#     all_steps = []
+
+#     while len(chunks) > 1:
+#         merged_chunks = []
+#         for i in range(0, len(chunks) - 1, 2):
+#             merged = merge_two_list(chunks[i], chunks[i + 1])
+#             merged_chunks.append(merged)
+#         if len(chunks) % 2 == 1:
+#             merged_chunks.append(chunks[-1])
+#         all_steps.append(merged_chunks)
+#         chunks = merged_chunks
+
+#     cnt = 1 
+#     for step in all_steps:
+#         while cnt < 2:
+#             print(step)
+#             cnt += 1
+#     if chunks:
+#         print(chunks[0])
+
+# m = list(map(int, input().split()))
+# merge_sort(m)
