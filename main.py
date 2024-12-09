@@ -243,3 +243,6 @@
 
 # m = list(map(int, input().split()))
 # merge_sort(m)
+
+# n = 1.00
+# print(f'{n:.1f}')
