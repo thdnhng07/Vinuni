@@ -13,7 +13,7 @@ package Lab2;
 
 import java.util.Scanner;
 
-public class Lab2_p2 {
+public class Lab02_P02 {
 
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);

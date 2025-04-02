@@ -14,7 +14,7 @@ package Lab2;
 
 import java.util.Scanner;
 
-public class Lab2_P1 {
+public class Lab02_P01 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
