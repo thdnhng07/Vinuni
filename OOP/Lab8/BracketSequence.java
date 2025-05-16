@@ -1,3 +1,15 @@
+// VinUniversity, Spring 2025
+// COMP1020 Object-Oriented Programming and Data Structures
+// Lab 08 – Week 09
+// by Dat Thanh – V202401381
+// Date: Apr 18, 2025
+// Disclaimer: I certify that this assignment is my own work and that I have not copied in part
+// or whole or otherwise plagiarised the work of other students and/or persons.
+
+//----------------------------------Problem 1-------------------------------
+//                             Bracket Sequence
+//-----------------------------------------------------------------------------
+
 package Lab8;
 
 import java.util.*;
@@ -15,7 +27,7 @@ public class BracketSequence {
     }
 
     public boolean isSupported() {
-        // Check if the string contains only supported bracket symbols
+
         for (char c : bracketSeq.toCharArray()) {
             if (c != '(' && c != ')' && c != '{' && c != '}' && c != '[' && c != ']') {
                 return false;
@@ -29,25 +41,25 @@ public class BracketSequence {
         boolean ok = true;
 
         for (char c : bracketSeq.toCharArray()) {
-            // If it's an opening bracket, push onto stack
+
             if (c == '(' || c == '{' || c == '[') {
                 s.push(c);
             }
-            // If it's a closing bracket, check for matching opening bracket
+
             else if (c == ')' || c == '}' || c == ']') {
                 if (s.isEmpty()) {
-                    return false; // No matching opening bracket
+                    return false;
                 }
                 char top = s.pop();
-                // Check if brackets match
+
                 if ((c == ')' && top != '(') ||
                     (c == '}' && top != '{') ||
                     (c == ']' && top != '[')) {
-                    return false; // Mismatched brackets
+                    return false;
                 }
             }
         }
-        // Sequence is valid only if stack is empty (all brackets matched)
+
         return ok && s.isEmpty();
     }
 
