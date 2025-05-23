@@ -1,0 +1,182 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "CityPlanner",
+            "request": "launch",
+            "mainClass": "CityPlanner",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "DesigningMap",
+            "request": "launch",
+            "mainClass": "DesigningMap",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Quadratic",
+            "request": "launch",
+            "mainClass": "Lab1.Quadratic",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "SumTwoInt",
+            "request": "launch",
+            "mainClass": "Lab1.SumTwoInt",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "SumofN",
+            "request": "launch",
+            "mainClass": "Lab1.SumofN",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Uppercase",
+            "request": "launch",
+            "mainClass": "Lab1.Uppercase",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Lab02_P01",
+            "request": "launch",
+            "mainClass": "Lab2.Lab02_P01",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Lab02_P02",
+            "request": "launch",
+            "mainClass": "Lab2.Lab02_P02",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Lab02_P03",
+            "request": "launch",
+            "mainClass": "Lab2.Lab02_P03",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Lab02_P04",
+            "request": "launch",
+            "mainClass": "Lab2.Lab02_P04",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "MatrixManipulation",
+            "request": "launch",
+            "mainClass": "Lab3.MatrixManipulation",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Rectangle",
+            "request": "launch",
+            "mainClass": "Lab3.Rectangle",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "Salary",
+            "request": "launch",
+            "mainClass": "Lab3.Salary",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "CubeVolume",
+            "request": "launch",
+            "mainClass": "Lab4.CubeVolume",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "MovingObject",
+            "request": "launch",
+            "mainClass": "Lab4.MovingObject",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "MovingObjectAvoidCollision",
+            "request": "launch",
+            "mainClass": "Lab5.MovingObjectAvoidCollision",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "ProductOrder",
+            "request": "launch",
+            "mainClass": "Lab5.ProductOrder",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "StackStutter",
+            "request": "launch",
+            "mainClass": "Lab7.StackStutter",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "BracketSequence",
+            "request": "launch",
+            "mainClass": "Lab8.BracketSequence",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "AVLTree",
+            "request": "launch",
+            "mainClass": "Lab9.AVLTree",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "StoreAndSearchStrings",
+            "request": "launch",
+            "mainClass": "Lab9.StoreAndSearchStrings",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "MatrixManipulation(1)",
+            "request": "launch",
+            "mainClass": "MatrixManipulation",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "TreeRecovery",
+            "request": "launch",
+            "mainClass": "TreeRecovery",
+            "projectName": "Vinuni_b6a32967"
+        },
+        {
+            "type": "java",
+            "name": "bruh$Q3",
+            "request": "launch",
+            "mainClass": "bruh$Q3",
+            "projectName": "Vinuni_b6a32967"
+        }
+    ]
+}
