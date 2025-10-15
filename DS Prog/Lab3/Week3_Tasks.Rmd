@@ -1,0 +1,195 @@
+---
+title: "Week 3 Tasks — Data Preparation, EDA, and Intro Modeling (R)"
+author: "Your Name"
+output:
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(lubridate)
+library(broom)
+theme_set(theme_minimal())
+```
+
+# Instructions
+
+- Use this template to complete Week 3 tasks. Replace placeholders with your work.
+- Ensure the document can knit top-to-bottom without errors.
+- Add short captions/annotations below each plot and metric output.
+
+# Task 1 — Load Data and Inspect
+
+```{r load-data}
+# TODO: Set path and read your dataset
+# Example:
+# data <- read_csv("path/to/your.csv")
+# head(data, 10)
+# dim(data)
+
+# Load NCR ride bookings dataset
+data <- read_csv("ncr_ride_bookings.csv")
+
+# Preview and dimensions
+head(data, 10)
+dim(data)
+
+```
+
+
+
+Briefly describe the dataset, its purpose, and key variables.
+
+# Task 2 — Data Types, Summary Stats, and Missingness
+
+```{r types-summary-missing}
+# Glimpse types
+# glimpse(data)
+
+# Summary statistics (numeric and categorical)
+# summary(data)
+
+# Missingness per column
+# tibble(col = names(data), n_missing = colSums(is.na(data))) %>%
+#   mutate(p_missing = n_missing / nrow(data)) %>%
+#   arrange(desc(p_missing))
+
+# Glimpse types
+glimpse(data)
+
+# Summary statistics
+summary(data)
+
+# Missingness per column
+missing_tbl <- tibble(
+  col = names(data),
+  n_missing = colSums(is.na(data))
+) %>%
+  mutate(p_missing = n_missing / nrow(data)) %>%
+  arrange(desc(p_missing))
+missing_tbl
+
+```
+
+# Task 3 — Data Cleaning
+
+```{r cleaning}
+# Examples:
+# data <- distinct(data)
+# names(data) <- names(data) %>%
+#   tolower() %>% str_replace_all(" ", "_") %>% str_trim()
+# data <- data %>% mutate(num_col = if_else(is.na(num_col), median(num_col, na.rm = TRUE), num_col))
+
+# Remove duplicate rows
+data <- distinct(data)
+
+# Standardize column names
+names(data) <- names(data) %>%
+  str_to_lower() %>%
+  str_replace_all(" ", "_") %>%
+  str_replace_all("[^a-z0-9_]", "")
+
+# Trim whitespace
+data <- data %>%
+  mutate(across(where(is.character), str_squish))
+
+# Simple imputation
+data <- data %>%
+  mutate(across(where(is.numeric),
+                ~ ifelse(is.na(.x), median(.x, na.rm = TRUE), .x)))
+
+# Check missingness again
+colSums(is.na(data))
+
+```
+
+# Task 4 — Exploratory Data Analysis (EDA)
+
+```{r eda}
+# Example univariate
+# data %>% ggplot(aes(numeric_col)) + geom_histogram(binwidth = 5, fill = "#2c7fb8") +
+#   labs(title = "Distribution of numeric_col", x = "numeric_col", y = "Count")
+
+# Example bivariate
+# ggplot(data, aes(x = xvar, y = yvar)) +
+#   geom_point(alpha = 0.6) +
+#   geom_smooth(method = "lm", se = FALSE, color = "#fc8d59") +
+#   labs(title = "xvar vs yvar")
+
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+data <- data %>%
+  mutate(
+    ride_distance = parse_number(as.character(`ride_distance`)),
+    booking_value = parse_number(as.character(`booking_value`))
+  )
+
+# Univariate: Ride Distance
+ggplot(data, aes(x = ride_distance)) +
+  geom_histogram(binwidth = 1, fill = "#2c7fb8", color = "white") +
+  labs(title = "Distribution of Ride Distance", x = "Distance (km)", y = "Count")
+
+# Univariate: Booking Value
+ggplot(data, aes(x = booking_value)) +
+  geom_histogram(binwidth = 10, fill = "#41b6c4", color = "white") +
+  labs(title = "Distribution of Booking Value", x = "Value", y = "Count")
+
+# Bivariate: Booking Value vs Ride Distance
+ggplot(data, aes(x = ride_distance, y = booking_value)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE, color = "#fc8d59") +
+  labs(title = "Booking Value vs Ride Distance")
+
+# Categorical: Booking Status counts
+data %>%
+  count(booking_status) %>%
+  ggplot(aes(x = reorder(booking_status, -n), y = n)) +
+  geom_col(fill = "#7fcdbb") +
+  coord_flip() +
+  labs(title = "Counts by Booking Status", x = "Status", y = "Count")
+
+```
+
+Write 3–5 short observations from EDA here.
+
+Ride distances are mostly short, with a few long rides.
+Booking value is skewed, with most fares below 300 units.
+There is a positive correlation between ride distance and booking value.
+Majority of bookings are Completed, while Cancelled rides form a smaller share.
+
+# Task 5 — Data Visualization
+
+```{r viz}
+# Create at least 2 clear plots with captions below
+# data %>% count(category) %>%
+#   ggplot(aes(x = fct_reorder(category, n), y = n)) + geom_col(fill = "#7fcdbb") +
+#   coord_flip() + labs(title = "Counts by category", x = "Category", y = "Count")
+
+# Plot 1: Payment Method distribution
+data %>%
+  count(payment_method) %>%
+  ggplot(aes(x = reorder(payment_method, -n), y = n)) +
+  geom_col(fill = "#2ca25f") +
+  labs(title = "Distribution of Payment Methods", x = "Payment Method", y = "Count")
+
+# Plot 2: Boxplot of Booking Value by Vehicle Type
+ggplot(data, aes(x = vehicle_type, y = booking_value, fill = vehicle_type)) +
+  geom_boxplot() +
+  labs(title = "Booking Value by Vehicle Type", x = "Vehicle Type", y = "Booking Value") +
+  guides(fill = "none") +
+  coord_flip()
+
+```
+
+Key takeaway:
+Cash is the dominant payment method, followed by digital payments.
+SUVs and Sedans have higher median booking values compared to Auto Rickshaws.
+Vehicle type clearly influences ride fares.
+
+
+

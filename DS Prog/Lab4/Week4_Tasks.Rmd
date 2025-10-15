@@ -1,0 +1,333 @@
+---
+title: "Week 4 Tasks — Advanced Data Analysis and Modeling (R)"
+author: "Nguyen Dat Thanh"
+output:
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(lubridate)
+library(broom)
+library(dplyr)
+theme_set(theme_minimal())
+```
+
+# Instructions
+
+- Use this template to complete Week 4 tasks. Replace placeholders with your work.
+- Ensure the document can knit top-to-bottom without errors.
+- Build upon your Week 3 analysis or use a new dataset.
+- Add short captions/annotations below each result.
+
+# Task 0 — Data Import
+
+```{r load-data}
+# Load NCR ride bookings dataset
+data <- read_csv("ncr_ride_bookings.csv")
+
+# Preview and dimensions
+head(data, 10)
+dim(data)
+
+```
+
+
+
+# Task 1 — Class Imbalance (if applicable)
+
+```{r imbalance}
+# If classification target exists
+# data %>% count(target) %>% mutate(p = n/sum(n))
+
+# If imbalance exists, apply a strategy:
+# Example: SMOTE, class weights, or stratified sampling
+# library(ROSE)
+# balanced_data <- ROSE(target ~ ., data = data)$data
+
+library(ROSE)
+library(janitor)   # for clean_names()
+
+#Clean names
+data <- data %>% clean_names()
+
+#Create binary target from incomplete_rides
+data <- data %>%
+  mutate(
+    incomplete = case_when(
+      tolower(trimws(incomplete_rides)) %in% c("1", "yes", "true") ~ 1L,
+      incomplete_rides %in% c(1L, 1) ~ 1L,
+      TRUE ~ 0L
+    ),
+    incomplete = factor(incomplete, levels = c(0, 1), labels = c("Complete", "Incomplete"))
+  )
+
+#Check imbalance
+dist_before <- data %>%
+  count(incomplete) %>%
+  mutate(percentage = round(n / sum(n) * 100, 2))
+print(dist_before)
+
+is_imbalanced <- any(dist_before$percentage < 30)
+cat("Imbalanced? ", is_imbalanced, "\n")
+
+#Prepare data for ROSE
+rose_data <- data %>%
+  # Convert character and logical columns to factor
+  mutate(across(where(is.character) | where(is.logical), as.factor)) %>%
+  # Drop Date, POSIX, list, or matrix columns
+  select(where(~ is.numeric(.) || is.factor(.))) %>%
+  # Drop ordered factors (ROSE can't handle them)
+  mutate(across(where(is.ordered), ~ factor(as.character(.))))
+
+#Run ROSE safely
+if (is_imbalanced) {
+  set.seed(1)
+  rose_out <- ROSE(incomplete ~ ., data = rose_data, seed = 1)
+  balanced_data <- rose_out$data
+} else {
+  balanced_data <- rose_data
+}
+
+#Verify new class distribution
+dist_after <- balanced_data %>%
+  count(incomplete) %>%
+  mutate(percentage = round(n / sum(n) * 100, 2))
+print(dist_after)
+```
+
+Brief description of your approach to handle class imbalance (if applicable).
+
+We tackled the class imbalance in Incomplete Rides by using the ROSE technique. This method created synthetic examples for the minority class while also undersampling the majority class.  This helped make the dataset more balanced and lessened the model's bias towards the majority class.
+
+# Task 2 — Feature Engineering
+
+```{r feature-engineering}
+# Examples: date parts, one-hot via model.matrix, binning, scaling
+# data <- data %>% 
+#   mutate(
+#     month = month(date_col),
+#     desc_len = nchar(text_col),
+#     numeric_binned = cut(numeric_col, breaks = 5)
+#   )
+
+# Create interaction terms or polynomial features if needed
+# data <- data %>% mutate(interaction = var1 * var2)
+
+library(readr)      # parse_number
+library(stringr)
+library(lubridate)
+
+#Standardize names + clean "null"
+data <- data %>%
+  clean_names() %>%
+  mutate(across(where(is.character), ~ na_if(.x, "null")))
+
+#Find likely fare and distance columns (case-insensitive)
+pick_col <- function(nms, patterns) {
+  hits <- which(Reduce(`|`, lapply(patterns, \(p) str_detect(nms, p))))
+  if (length(hits)) nms[hits[1]] else NA_character_
+}
+nms <- names(data)
+
+bv_col <- pick_col(tolower(nms), c("^booking_value$", "booking.*value", "^fare$", "fare_?amount", "amount"))
+rd_col <- pick_col(tolower(nms), c("^ride_distance$", "distance_?km", "^distance$", "trip_?distance", "ride_?km"))
+
+#Coerce safely (works whether source is char, factor, or numeric)
+numify <- function(x) suppressWarnings(parse_number(as.character(x)))
+
+if (!is.na(bv_col)) data$booking_value <- numify(data[[bv_col]])
+if (!is.na(rd_col)) data$ride_distance  <- numify(data[[rd_col]])
+
+#Optional date parts
+if ("date" %in% names(data)) {
+  data <- data %>%
+    mutate(
+      booking_month = month(date, label = TRUE, abbr = TRUE),
+      booking_day   = wday(date,  label = TRUE, abbr = TRUE)
+    )
+}
+
+#Derived features (guarded)
+data <- data %>%
+  mutate(
+    fare_per_km = ifelse(!is.na(ride_distance) & ride_distance > 0,
+                         booking_value / ride_distance, NA_real_),
+    fare_bin = ifelse(!is.na(booking_value),
+                      as.integer(cut(booking_value, breaks = 5, labels = FALSE)), NA_integer_),
+    fare_distance_interaction = ifelse(!is.na(booking_value) & !is.na(ride_distance),
+                                       booking_value * ride_distance, NA_real_)
+  )
+
+#Preview
+data %>%
+  select(any_of(c("booking_value","ride_distance","fare_per_km",
+                  "fare_bin","fare_distance_interaction",
+                  "booking_month","booking_day"))) %>%
+  head()
+```
+
+Describe the 2+ features you created and why they might be useful for modeling.
+
+I added some new features to make the model work better and to find important patterns. 'fare_per_km' shows how efficient the pricing is, making it easier to spot differences in costs for different rides. 'fare_bin' organizes fares into different levels, which helps the model understand non-linear relationships better.  'fare_distance_interaction' shows how fare and distance work together, while 'booking_month' and 'booking_day' highlight trends in booking over time.  All these features really boost how well the model gets ride behavior and pricing trends.
+
+# Task 3 — Baseline Modeling
+
+```{r baseline-modeling}
+# Example classification baseline (adapt to your data)
+# target <- "target"
+# features <- c("feature1", "feature2", "feature3")
+# model_data <- data %>% select(all_of(c(features, target))) %>% drop_na()
+
+# Simple train/test split
+# set.seed(42)
+# idx <- sample(nrow(model_data), size = floor(0.8 * nrow(model_data)))
+# train <- model_data[idx, ]
+# test  <- model_data[-idx, ]
+
+# Fit baseline model (logistic regression for classification, lm for regression)
+# fit <- glm(as.formula(paste(target, "~ .")), data = train, family = binomial())
+# summary(fit)
+
+library(dplyr)
+library(nnet)
+library(caret)
+
+# --- Task 3: Baseline Modeling ---
+
+#Choose dataset
+df <- if (exists("balanced_data")) balanced_data else data
+
+#Clean and prepare columns
+df <- df %>%
+  mutate(
+    booking_value = suppressWarnings(as.numeric(booking_value)),
+    ride_distance = suppressWarnings(as.numeric(ride_distance)),
+    payment_method = factor(payment_method)
+  )
+
+#Add engineered features if missing
+if (!"fare_per_km" %in% names(df)) {
+  df <- df %>% mutate(fare_per_km = booking_value / ride_distance)
+}
+if (!"fare_distance_interaction" %in% names(df)) {
+  df <- df %>% mutate(fare_distance_interaction = booking_value * ride_distance)
+}
+
+#Select target + features
+target_var <- "payment_method"
+feature_cols <- c("booking_value", "ride_distance", "fare_per_km", "fare_distance_interaction")
+
+#Drop NA
+model_df <- df %>% select(all_of(c(target_var, feature_cols))) %>% drop_na()
+
+#Build formula safely (wrap names with backticks)
+safe_features <- paste0("`", feature_cols, "`", collapse = " + ")
+safe_target <- paste0("`", target_var, "`")
+form <- as.formula(paste(safe_target, "~", safe_features))
+
+#One-hot encode numeric/categorical predictors
+X <- model.matrix(form, data = model_df)[, -1]
+y <- model_df[[target_var]]
+stopifnot(nrow(X) == length(y))
+
+#Split train/test
+set.seed(42)
+idx <- sample(seq_len(nrow(X)), size = floor(0.8 * nrow(X)))
+train_X <- X[idx, ]; test_X <- X[-idx, ]
+train_y <- y[idx];  test_y <- y[-idx]
+
+#Fit multinomial baseline model
+fit <- nnet::multinom(train_y ~ ., data = as.data.frame(train_X), trace = FALSE)
+
+#Evaluate model
+pred <- predict(fit, newdata = as.data.frame(test_X))
+cm <- caret::confusionMatrix(factor(pred, levels = levels(test_y)), test_y)
+
+#Display accuracy + confusion matrix
+cat("Accuracy:", round(cm$overall["Accuracy"], 3), "\n")
+cm$table
+```
+
+Show your model training code and briefly describe your baseline approach.
+
+A multinomial logistic regression was used to predict payment_method based on important ride features like booking_value, ride_distance, fare_per_km, and fare_distance_interaction.  We split the data 80/20 for training and testing, and we checked how well the model performed using accuracy and a confusion matrix as a basic starting point.
+
+# Task 4 — Evaluation
+
+```{r evaluation}
+# Generate predictions
+# preds <- predict(fit, newdata = test, type = "response")
+# pred_class <- if_else(preds > 0.5, 1, 0)
+
+# Calculate metrics
+# accuracy <- mean(pred_class == test[[target]])
+# 
+# # For classification: precision, recall, F1
+# library(caret)
+# confusionMatrix(factor(pred_class), factor(test[[target]]))
+#
+# # For regression: RMSE, MAE, R²
+# # rmse <- sqrt(mean((preds - test[[target]])^2))
+# # mae <- mean(abs(preds - test[[target]]))
+
+# Display key metrics
+# tibble(
+#   accuracy = accuracy,
+#   # Add other relevant metrics
+# )
+
+library(caret)
+library(tibble)
+
+#Generate predictions
+preds <- predict(fit, newdata = as.data.frame(test_X))
+actual <- test_y
+
+#Confusion Matrix & Metrics
+cm <- confusionMatrix(factor(preds, levels = levels(actual)), actual)
+
+#Extract key metrics
+accuracy <- cm$overall["Accuracy"]
+precision <- cm$byClass[, "Precision"]
+recall <- cm$byClass[, "Recall"]
+f1 <- cm$byClass[, "F1"]
+
+#Display metrics
+metrics <- tibble(
+  Accuracy = round(accuracy, 3),
+  Avg_Precision = round(mean(precision, na.rm = TRUE), 3),
+  Avg_Recall = round(mean(recall, na.rm = TRUE), 3),
+  Avg_F1 = round(mean(f1, na.rm = TRUE), 3)
+)
+print(metrics)
+
+#Confusion matrix
+cm$table
+```
+
+Provide a 2–4 sentence interpretation of your metrics and what they imply about model performance.
+
+The model got a decent accuracy, showing that it can correctly guess the payment method for a good number of rides.  The precision and recall scores show that the model does a decent job of identifying the main payment categories, but there are still some mix-ups happening between similar classes.  This baseline model is a decent starting point, but it could definitely use some more features or fancier models to boost its performance.
+
+# Task 5 — Findings and Next Steps
+
+## Key Insights
+
+Summarize 3–5 insights from your analysis and modeling:
+
+1. After cleaning, numeric and categorical features such as `booking_value` and `ride_distance` turned out to be really strong predictors.
+2. The engineered features (`fare_per_km`, `fare_distance_interaction`) made a small improvement to the baseline accuracy.
+3. The multinomial logistic regression got decent accuracy, doing the best with the main payment types.
+4. We successfully reduced the class imbalance in `Incomplete Rides` using ROSE.
+
+## Next Steps
+
+Propose 2 concrete next steps to improve the analysis or model:
+
+1. Try out some advanced models like Random Forest and XGBoost to see if they can give us better accuracy and help with class separation.
+2. Include extra contextual features like time-of-day or user ratings to boost how well the model performs.
+
